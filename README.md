@@ -13,3 +13,6 @@ Each type of Flag should support:
 3. New Feature: Medium-term (often heavily Environment based)
 4. Custom Feature Disablement/Enablement (e.g. Detail Level of Errors): Long-term (possibly permanent)
 5. Safety Valves (Circuit Breakers / Kill Switches): Permanent
+
+
+> Note: Each of the above *Types* should have its own Enum in the application (the enum name is the combination: {Enum type}.{Enum entry name} )
