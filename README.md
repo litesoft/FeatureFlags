@@ -8,13 +8,13 @@ Each type of Flag should support:
 
 ## Types of Flags:
 
-1. A/B Enhancement Testing: Short-term (It is nice to allow users to opt-out of the testing -- if testing a proposed improved user experience -- this option can be inappropriate, e.g. statistic based testing for engagement enhancement).
-2. Migration Support (behaviour same -- code changed): Short-term
+1. A/B Enhancement Testing (Experiment): Short-term (It is nice to allow users to opt-out of the testing -- if testing a proposed improved user experience -- this option can be inappropriate, e.g. statistic based testing for engagement enhancement).
+2. Migration Support (Ops) (behaviour same -- code changed): Short-term
 3. Sunsetting a Feature: Short-term
-4. New Feature: Medium-term (often heavily Environment based)
-5. Custom Feature Disablement/Enablement (e.g. Newbie vs Power User, Detail Level of Errors, or Free Trials): Long-term (possibly permanent)
-6. Safety Valves (Circuit Breakers / Kill Switches / Maintenance Window Shutdown Warnings): Permanent
-7. DevOps Controls (e.g. Logging (two binary flags by code area): LoggingEnabled, LoggingVerbose): Permanent (until the "code area" is removed) 
+4. New Feature (Release): Medium-term (often heavily Environment based)
+5. Custom Feature Disablement/Enablement (Permission) (e.g. Newbie vs Power User, Detail Level of Errors, or Free Trials): Long-term (possibly permanent)
+6. Safety Valves (Ops) (Circuit Breakers / Kill Switches / Maintenance Window Shutdown Warnings): Permanent
+7. DevOps Controls (Ops) (e.g. Logging (two binary flags by code area): LoggingEnabled, LoggingVerbose): Permanent (until the "code area" is removed) 
 
 
 > Note: Each of the above *Types* should have its own Enum in the application (the flag name is the combination: {Enum type}.{Enum entry name} )
@@ -23,6 +23,7 @@ General Questions:
 
 * Do we need "Multivariate Flags" (non-binary, e.g. Logging about that has 3 options: Disabled, Regular, & Verbose)?
 * Who are the stakeholders besides developers? (Ops, Product, Business, Sales, etc)
+* Do we need scheduled flag change
 * ...
 
 Custom Built/Augmentation Questions:
