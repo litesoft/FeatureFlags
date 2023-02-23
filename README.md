@@ -1,21 +1,30 @@
 # FeatureFlags
 Commentary/Thoughts on Feature Flags 
 
+Feature Flags can be categorized on three dimensions:
+1. How often will it need to deliver different outcomes based on context changes (e.g. by user / organization / groupings) -- its **dynamism**.
+2. Who should (role) be responsible for managing the flag -- its **ownership**.
+3. How long will it have to exist (creation thru removal) -- its **longevity**.  The Types below are placed in one of:
+   1. Short-term
+   2. Medium-term
+   3. Long-term
+   4. Permanent
+
 Each type of Flag should support: 
-* Activation Limited based on User Groups: By user characteristics &/ companies (supports Progressive/Ring deployments)
+* Activation Limited based on Random Users (percentage), or User Groups: By user characteristics &/ companies (supports Progressive/Ring deployments)
 * Activation Limited based on Environment: Dev, QA, UAT, Prod-Group1, Prod-Group2
-* Expiration Dates (except )
+* Expiration Dates (except permanent ones: "Safety Valves", "DevOps Controls", & possibly "Permissioning")
 
 ## Types of Flags:
 
-1. A/B Enhancement Testing (Experiment): Short-term (It is nice to allow users to opt-out of the testing -- if testing a proposed improved user experience -- this option can be inappropriate, e.g. statistic based testing for engagement enhancement).
-2. Migration Support (Ops) (behaviour same -- code changed): Short-term
-3. Sunsetting a Feature: Short-term
-4. New Feature (Release): Medium-term (often heavily Environment based)
-5. Custom Feature Disablement/Enablement (Permission) (e.g. Newbie vs Power User, Detail Level of Errors, or Free Trials): Long-term (possibly permanent)
-6. Safety Valves (Ops) (Circuit Breakers / Kill Switches / Maintenance Window Shutdown Warnings): Permanent
-7. DevOps Controls (Ops) (e.g. Logging (two binary flags by code area): LoggingEnabled, LoggingVerbose): Permanent (until the "code area" is removed) 
-
+1. Experiment (A/B Enhancement Testing): Short-term (It is nice to allow users to opt-out of the testing -- if testing a proposed improved user experience -- this option can be inappropriate, e.g. statistic based testing for engagement enhancement).
+2. Release (New Feature): Medium-term (often heavily Environment based)
+3. Sunsetting (Old Feature): Medium-term
+4. Permissioning (Custom Feature Disablement/Enablement) (e.g. Newbie vs Power User, Detail Level of Errors, or Free Trials): Long-term (possibly permanent)
+>DevOps Group:
+5. Migration Support (behaviour same -- code changed): Short-term
+6. Safety Valves (Circuit Breakers / Kill Switches / Maintenance Window Shutdown Warnings): Permanent
+7. DevOps Controls (e.g. Logging (two binary flags by code area): LoggingEnabled, LoggingVerbose): Permanent (until the "code area" is removed) 
 
 > Note: Each of the above *Types* should have its own Enum in the application (the flag name is the combination: {Enum type}.{Enum entry name} )
 
@@ -35,3 +44,5 @@ Custom Built/Augmentation Questions:
 
 
 Feature Flag Glossary: https://featureflags.io/feature-flag-glossary/
+
+See Graphs: https://martinfowler.com/articles/feature-toggles.html
