@@ -3,8 +3,8 @@ Commentary/Thoughts on Feature Flags
 
 Feature Flags can be categorized on three dimensions:
 1. How often will it need to deliver different outcomes based on context changes (e.g. by user / organization / groupings) -- its **dynamism**.
-2. Who should (role) be responsible for managing the flag -- its **ownership**.
-3. How long will it have to exist (creation thru removal) -- its **longevity**.  The Types below are placed in one of:
+2. Who (role) should be responsible for managing the flag -- its **ownership**.
+3. How long will it have to exist (creation thru removal) -- its **longevity**.  The Types below are placed in one of the following longevity buckets:
    1. Short-term
    2. Medium-term
    3. Long-term
@@ -33,6 +33,7 @@ General Questions:
 * Do we need "Multivariate Flags" (non-binary, e.g. Logging about that has 3 options: Disabled, Regular, & Verbose)?
 * Who are the stakeholders besides developers? (Ops, Product, Business, Sales, etc)
 * Do we need scheduled flag change
+* With "expiration dates" on most of the flags, should we create "time bombs" which will fail a test if a feature flag is still around after its expiration date.
 * ...
 
 Custom Built/Augmentation Questions:
