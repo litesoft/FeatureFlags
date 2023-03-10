@@ -61,9 +61,92 @@ Each type of Flag should support:
 1. Refactor the code to support running the "console" as either embedded (current model) or as a stand-alone application.
 2. With the stand-alone "console", we can introduce a new model for managing the flags:
    1. By splitting the flag storage into two parts: a *human* layer and an *application consumption* layer.
-   2. A library added to the stand-alone "console" that maps the "*human* layer" into the "*application consumption* layer", with validation and enhanced types: "Group Control Flags", "Cascading Flags", tightly controlled (enums) variants for "Multivariate Flags", and *easier support for mutability / visibility based on **ownership** roles* (could also be used to *nag* about expired flags).
+   2. A library added to the stand-alone "console" that maps the "*human* layer" into the "*application consumption* layer", with validation and enhanced types: "Group Control Flags", "Cascading Flags", "Dependency Flags" (like a reverse Group Control flag -- see Harness' Prerequisites), tightly controlled (enums) variants for "Multivariate Flags", and *easier support for mutability / visibility based on **ownership** roles* (could also be used to *nag* about expired flags).
    3. Add a new **StateRepository** for the "*application consumption* layer" that does not support updating and is backed by an **S3** Object that polls periodically and on change does the parsing (based on the **Strategy**) of the supporting data (reducing the time overhead per request) before swapping in the *current* values. Since this new **StateRepository** is effectively two processes, the mapper and the server, new functionality can be added here also, such as "Scheduled Activation" (to minimize the variation of polling and processing times for each application instance).
    4. Since **S3** buckets are essentially "free" (you pay for what is in them, not how many buckets you have -- "standard" option -- AWS, CGP, & Azure), two buckets for each application could be used: one for the "*human* layer" version and one for the "*application consumption* layer" so each can have different permissions.
+   5. Others...:
+      1. Add MS Teams Channel/Chat notifications.
+      2. Support Flags being targeted for UI (so they can be requested by the UI).
+
+### Sequence Diagram showing interactions and processes between the Users and the sub-systems:
+```mermaid
+sequenceDiagram
+    Actor User
+    participant EC as Enhanced<br/>Console
+    participant S3H as Enhanced<br/>Config<br/>Store (S3)
+    participant TGR as Mapper<br/>Trigger<br/>(S3 Triggered Lambda)
+    participant CM as Config<br/>Mapper
+    participant S3C as Consumer<br/>Config<br/>Store (S3)
+    participant APP as Instances
+    participant DIE as Instance Terminated 
+    %% User interaction with Enhanced Console
+    APP->>S3C: Pull initial Current<br/>Consumer Config<br/>File
+    break when Pull Failed
+        APP->>DIE: Log & Die! 
+    end 
+    APP->>APP: Process File
+    break when Pull Failed
+        APP->>DIE: Log & Die! 
+    end 
+    APP->>APP: Log Success 
+    APP->>APP: Record File AND Timestamp
+    loop on background thread
+        Note right of S3C:  Pause N seconds
+        APP->>S3C: Pull Current<br/>Consumer Config<br/>File Timestamp
+        break when Pull Failed
+            APP->>APP: Log (w/ last timestamp and delta)
+        end 
+        break when New Timestamp same as previous
+            APP->>APP: Log periodically
+        end 
+        APP->>S3C: Pull Current<br/>Consumer Config<br/>File Timestamp
+        break when Pull Failed
+            APP->>APP: Log (w/ last timestamp and delta)
+        end 
+        APP->>APP: Process File
+        break when Pull Failed
+            APP->>APP: Log problem (w/ last timestamp and delta) 
+        end
+        APP->>APP: Log Success 
+        APP->>APP: Record File AND Timestamp
+    end
+    User->>EC: Launch and User Sign-in
+    EC->>S3H: Pull Config Options
+    S3H->>EC: Config Options List
+    EC->>User: Show Options
+    User->>EC: Select Option
+    EC->>S3H: Pull Requested Config
+    S3H->>EC: Config File
+    EC->>User: Show Option
+    opt Update & Save
+        User->>EC: Make Changes &<br/>Request Save
+        EC->>S3H: Save
+        EC->>User: Success / Failure
+    end
+    opt Publish
+        User->>EC: Request Publish
+        EC->>S3H: Check Current<br/>(Unchanged & Valid)
+        EC->>+TGR: Publish Request (if Unchanged & Valid)
+        EC->>User: Success / Failure
+    end
+    %% Publishing
+    TGR->>+CM: Request Mapping<br/>(Versioned File)
+    deactivate TGR
+    CM->>S3H: Pull (Versioned File)
+    break when Pull Failed
+        Note right of CM: Log Error
+    end 
+    CM->>CM: Map Enhanced to Consumer Form<br/>Checking Validity
+    break when Invalid
+        Note right of CM: Log Error
+    end 
+    CM->>S3C: Update/Save<br/>Consumer Form
+    break when Update/Save Failed
+        Note right of CM: Log Error
+    end 
+    Note right of CM: Log Success
+    deactivate CM
+```
 
 ### Interesting websites:
 
