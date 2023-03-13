@@ -68,7 +68,7 @@ Each type of Flag should support:
       1. Add MS Teams Channel/Chat notifications.
       2. Support Flags being targeted for UI (so they can be requested by the UI).
 
-### Sequence Diagram showing interactions and processes between the Users and the sub-systems:
+### Sequence Diagram showing interactions and processes between the Users and the S3 Consumer Bucket:
 ```mermaid
 sequenceDiagram
     Actor User
@@ -77,39 +77,7 @@ sequenceDiagram
     participant TGR as Mapper<br/>Trigger<br/>(S3 Triggered Lambda)
     participant CM as Config<br/>Mapper
     participant S3C as Consumer<br/>Config<br/>Store (S3)
-    participant APP as Instances
-    participant DIE as Instance Terminated 
     %% User interaction with Enhanced Console
-    APP->>S3C: Pull initial Current<br/>Consumer Config<br/>File
-    break when Pull Failed
-        APP->>DIE: Log & Die! 
-    end 
-    APP->>APP: Process File
-    break when Pull Failed
-        APP->>DIE: Log & Die! 
-    end 
-    APP->>APP: Log Success 
-    APP->>APP: Record File AND Timestamp
-    loop on background thread
-        Note right of S3C:  Pause N seconds
-        APP->>S3C: Pull Current<br/>Consumer Config<br/>File Timestamp
-        break when Pull Failed
-            APP->>APP: Log (w/ last timestamp and delta)
-        end 
-        break when New Timestamp same as previous
-            APP->>APP: Log periodically
-        end 
-        APP->>S3C: Pull Current<br/>Consumer Config<br/>File Timestamp
-        break when Pull Failed
-            APP->>APP: Log (w/ last timestamp and delta)
-        end 
-        APP->>APP: Process File
-        break when Pull Failed
-            APP->>APP: Log problem (w/ last timestamp and delta) 
-        end
-        APP->>APP: Log Success 
-        APP->>APP: Record File AND Timestamp
-    end
     User->>EC: Launch and User Sign-in
     EC->>S3H: Pull Config Options
     S3H->>EC: Config Options List
@@ -146,6 +114,45 @@ sequenceDiagram
     end 
     Note right of CM: Log Success
     deactivate CM
+```
+
+### Sequence Diagram showing interactions and processes between the Applications (instances) and the S3 Consumer Bucket:
+```mermaid
+sequenceDiagram
+    participant APP as Instances
+    participant S3C as Consumer<br/>Config<br/>Store (S3)
+    participant DIE as Instance Terminated 
+    %% User interaction with Enhanced Console
+    APP->>S3C: Pull initial Current<br/>Consumer Config<br/>File
+    break when Pull Failed
+        APP->>DIE: Log & Die! 
+    end 
+    APP->>APP: Process File
+    break when Process Failed
+        APP->>DIE: Log & Die! 
+    end 
+    APP->>APP: Log Success 
+    APP->>APP: Record Timestamp and File (as current Active Config)
+    loop on background thread
+        Note right of S3C:  Pause N seconds
+        APP->>S3C: Pull Current<br/>Consumer Config<br/>File Timestamp
+        break when Pull Failed
+            APP->>APP: Log (w/ last timestamp and delta)
+        end 
+        break when New Timestamp same as previous
+            APP->>APP: Log periodically
+        end 
+        APP->>S3C: Pull Current<br/>Consumer Config<br/>File
+        break when Pull Failed
+            APP->>APP: Log (w/ last timestamp and delta)
+        end 
+        APP->>APP: Process File
+        break when Process Failed
+            APP->>APP: Log problem (w/ last timestamp and delta) 
+        end
+        APP->>APP: Log Success 
+        APP->>APP: Replace Timestamp and File (as current Active Config)
+    end
 ```
 
 ### Interesting websites:
